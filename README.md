@@ -10,8 +10,13 @@
   - [Бенчмарки](#бенчмарки)
   - [Голосовой пайплайн](#голосовой-пайплайн)
   - [Воспроизведение](#воспроизведение)
+  - [Расширение под себя](#расширение-под-себя)
   - [Файлы](#файлы)
   - [Ограничения](#ограничения)
+- **Дополнительные документы:**
+  - [TUTORIAL.md](TUTORIAL.md) — 8 шагов от клонирования до своего микрофона
+  - [INTEGRATION.md](INTEGRATION.md) — подключение к Home Assistant, Zigbee2MQTT, ESPHome, HomeKit, MQTT
+  - [QUANTIZATION.md](QUANTIZATION.md) — как ужать веса до 125 МБ и ускорить в 3-5×
 - 🇬🇧 [English description below ↓](#english)
 
 ---
@@ -131,6 +136,28 @@ python src/bench.py
 # голосовой end-to-end (30 русских команд):
 python src/voice_pipeline.py
 ```
+
+---
+
+### Расширение под себя
+
+**1. Подключение к реальному дому.** См. `INTEGRATION.md`. Готовые рецепты для:
+- Home Assistant (REST + Conversation Agent)
+- Zigbee2MQTT (MQTT publish)
+- ESPHome (native API)
+- Apple HomeKit (через HAP-python / homebridge)
+- Tuya Cloud
+- Generic MQTT
+
+**2. Свои функции.** Открой `src/voice_pipeline.py` → `TOOL_REGISTRY`. 12 функций по умолчанию, всего в датасете 100 уникальных имён. Близкие к существующим (`set_light_color`, `play_radio_station`) — работают сразу. Совсем новые — нужен дообуч (см. Шаг 8 в `TUTORIAL.md`).
+
+**3. Свой язык.** Whisper понимает 99 языков. В `src/voice_pipeline.py` найди `stt_translate(stt, TMP_WAV, source_lang="ru")` и поменяй `"ru"` на `"de"`/`"fr"`/`"es"`/etc. Перевод в English — встроенный.
+
+**4. Уменьшить модель.** См. `QUANTIZATION.md`. С `torch.quantization` dynamic int8 модель ужимается до **~125 МБ** и ускоряется в **3-5×** на CPU. Один Python-скрипт, без переобучения.
+
+**5. Raspberry Pi.** См. `INTEGRATION.md` раздел Pi. Pi 4 (4GB) с int8 квантованием — рабочая конфигурация. Wake-word через openwakeword + Whisper-small + квантованный GPT-2.
+
+**6. Расширение датасета.** Если нужны новые функции — генерим ещё items через любой LLM (промпт-шаблон в `src/build_sft_v2.py`), кладём в `data/sh_<domain>.json`, прогоняем `build_sft_v2.py` + `train.py`. Цикл ~3 часа CPU.
 
 ---
 
