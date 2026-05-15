@@ -5,15 +5,15 @@ import os, sys, json, time, random
 from pathlib import Path
 import torch
 import torch.nn.functional as F
-sys.path.insert(0, str(Path.home() / "gpt2_sandbox/code"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 from integrated_gpt2_torch import GPT2, encode
 
 DEVICE = torch.device('cpu')
 torch.set_num_threads(4)
 
-BASE = Path("/mnt/c/Users/paper/Desktop/GPT2UPGRADE_REPRO/gpt2_ft_ckpt/gpt2_ft_final.pt")
-DATA = Path(__file__).resolve().parent / "sh_train.json"
-OUT = Path(__file__).resolve().parent / "smart_home_v2.pt"
+BASE = Path(__file__).resolve().parent.parent / "weights" / "smart_home_v2_base.pt"  # fallback: train from openai-community/gpt2
+DATA = Path(__file__).resolve().parent.parent / "data" / "sh_train.json"
+OUT = Path(__file__).resolve().parent.parent / "weights" / "smart_home_v2.pt"
 
 PAD = 1024
 LR = 1e-5
@@ -44,7 +44,13 @@ def main():
     pairs = json.load(open(DATA, encoding='utf-8'))
     print(f"  loaded {len(pairs)} pairs")
     model = GPT2()
-    model.load_state_dict(torch.load(str(BASE), map_location='cpu'))
+    if BASE.exists():
+        print(f"  resume from {BASE.name}")
+        model.load_state_dict(torch.load(str(BASE), map_location='cpu'))
+    else:
+        print(f"  no checkpoint at {BASE} -> training from raw openai-community/gpt2")
+        from integrated_gpt2_torch import load_gpt2_torch_weights
+        load_gpt2_torch_weights(model)
     model.to(DEVICE); model.train()
     opt = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=0.01)
     idx = list(range(len(pairs)))

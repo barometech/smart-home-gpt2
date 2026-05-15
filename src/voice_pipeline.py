@@ -11,13 +11,13 @@ from pathlib import Path
 import torch
 import soundfile as sf
 
-sys.path.insert(0, str(Path.home() / "gpt2_sandbox/code"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 from integrated_gpt2_torch import GPT2, encode, decode
 
 DEVICE = torch.device('cpu')
 torch.set_num_threads(4)
 
-WEIGHTS = Path(__file__).resolve().parent / "smart_home_v2.pt"
+WEIGHTS = Path(__file__).resolve().parent.parent / "weights" / "smart_home_v2.pt"
 TMP_WAV = Path("/tmp/sh_voice.wav")
 
 

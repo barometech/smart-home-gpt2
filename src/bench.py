@@ -2,14 +2,14 @@
 import os, sys, json, re, time
 from pathlib import Path
 import torch
-sys.path.insert(0, str(Path.home() / "gpt2_sandbox/code"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 from integrated_gpt2_torch import GPT2, encode, decode
 
 DEVICE = torch.device('cpu')
 torch.set_num_threads(4)
 
-W = Path(__file__).resolve().parent / "smart_home_v2.pt"
-TEST = Path(__file__).resolve().parent / "sh_test.json"
+W = Path(__file__).resolve().parent.parent / "weights" / "smart_home_v2.pt"
+TEST = Path(__file__).resolve().parent.parent / "data" / "sh_test.json"
 
 
 def parse_name(text):
